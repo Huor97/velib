@@ -1,5 +1,5 @@
 <?php
-    // include('apiVelib.php')
+    include('apiVelib.php')
 ?>
 
 <!DOCTYPE html>
@@ -13,6 +13,8 @@
 </head>
 <body>
     <div class=container>
+       
+        <!-- la station -->
         <div class="carte">
             <div id="vel17033" class="caseVelo"></div>
             <div id="vel8056" class="caseVelo"></div>
