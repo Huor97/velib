@@ -2,20 +2,21 @@
 //Connexion à la base de données
 try{    
     $dsn = 'mysql:dbname=velib;host=127.0.0.1:3306;charset=UTF8';
-    $user = 'root';
-    $password = '';
+    $user = 'rouh';
+    $password = 'huor';
 
     $bdd = new PDO($dsn, $user, $password);
 }catch (PDOException $e){
      die ('Problème de connexion à la base de données');
-}
 
+}
+echo "bien lu\n";
 //ECRIRE LE CODE ICI
 $selectStation = (getAllCodeVelibStationFromBDD($bdd));
 
 foreach ($selectStation as $key => $value){
     $data = getJsonFromAPI($value['code_station']);
-    print_r($data);
+    //print_r( $data );
     // echo $value['code_station'], "<br>";
     (setVelibData($bdd, $value['code_station'], $data));
 };
@@ -39,7 +40,7 @@ function getAllCodeVelibStationFromBDD($pdo){
     $sql = $pdo->prepare($requete);
     $sql->execute();
     if($sql->errorInfo()[0] != 00000 ){
-        print_r($sql->errorInfo());
+        rint_r($sql->errorInfo());
     }
     return $sql->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -91,9 +92,18 @@ function setVelibData($pdo, $codeStation, $data){
      * exemple1: UPDATE `dispo` SET `code_station_dispo` = 4444 WHERE `code_station` = 3242
      * exemple2: UPDATE `dispo` SET `code_station` = 5551 WHERE `nom_station` = 'test2'  
      */
+//var_dump(getOneVelibStationFromBDD($pdo, $codeStation));
 
-    if(getOneVelibStationFromBDD($pdo, $codeStation)){
-        $requeteUpdate = "UPDATE dispo SET ouvert_dispo = :ouvert_dispo, evelo_dispo = :evelo_dispo, velo_dispo = :velo_dispo, total_dispo = :total_dispo, capacite_dispo = :capacite_dispo WHERE code_station_dispo = :codeStation ";
+	$requeteCount = "SELECT COUNT(*) as c FROM dispo where codeStation_dispo= :codeStation";
+	$sqlUpdate = $pdo->prepare($requeteCount);
+	$sqlUpdate->bindValue(':codeStation', $codeStation,  PDO::PARAM_INT);
+	$sqlUpdate->execute();
+	//var_dump($sqlUpdate->fetchAll(PDO::FETCH_ASSOC)[0]['c']);
+	$nb=$sqlUpdate->fetchAll(PDO::FETCH_ASSOC)[0]['c'];
+
+
+    if($nb){
+        $requeteUpdate = "UPDATE dispo SET ouvert_dispo = :ouvert_dispo, evelo_dispo = :evelo_dispo, velo_dispo = :velo_dispo, total_dispo = :total_dispo, capacite_dispo = :capacite_dispo WHERE codeStation_dispo = :codeStation ";
         $sqlUpdate = $pdo->prepare($requeteUpdate);
         $sqlUpdate->bindValue(':ouvert_dispo', checkIfOpenStation($data->is_renting), PDO::PARAM_INT);
         $sqlUpdate->bindValue(':evelo_dispo', $data->ebike, PDO::PARAM_INT);
@@ -102,11 +112,10 @@ function setVelibData($pdo, $codeStation, $data){
         $sqlUpdate->bindValue(':capacite_dispo', $data->capacity, PDO::PARAM_INT);
         $sqlUpdate->bindValue(':codeStation', $codeStation, PDO::PARAM_INT);
         $sqlUpdate->execute();
-        // echo "helllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllo";
         if($sqlUpdate->errorInfo()[0] != 00000 ){
             print_r($sqlUpdate->errorInfo());
         }
-    } else {
+echo "update\n";    } else {
         /**
          * requet ajouter une stations à la table dispo
          * INSERT INTO `dispo`(`code_station`)
@@ -124,13 +133,12 @@ function setVelibData($pdo, $codeStation, $data){
         $sqlInsert->bindValue(':capacite_dispo', $data->capacity, PDO::PARAM_INT);
         $sqlInsert->bindValue(':codeStation', $codeStation, PDO::PARAM_INT);
         $sqlInsert->execute();
-        // echo "helllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllo1234";
 
         if($sqlInsert->errorInfo()[0] != 00000 ){
             print_r($sqlInsert->errorInfo());
         }
    
-        
+        echo "insert\n";
     }
 
 }
