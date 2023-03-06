@@ -1,15 +1,5 @@
 <?php
-//Connexion à la base de données
-try{    
-    $dsn = 'mysql:dbname=velib;host=127.0.0.1:3306;charset=UTF8';
-    $user = 'rouh';
-    $password = 'huor';
-
-    $bdd = new PDO($dsn, $user, $password);
-}catch (PDOException $e){
-     die ('Problème de connexion à la base de données');
-
-}
+include('connectBDD.php');
 echo "bien lu\n";
 //ECRIRE LE CODE ICI
 $selectStation = (getAllCodeVelibStationFromBDD($bdd));
@@ -115,7 +105,8 @@ function setVelibData($pdo, $codeStation, $data){
         if($sqlUpdate->errorInfo()[0] != 00000 ){
             print_r($sqlUpdate->errorInfo());
         }
-echo "update\n";    } else {
+//echo "update\n"; 
+	} else {
         /**
          * requet ajouter une stations à la table dispo
          * INSERT INTO `dispo`(`code_station`)
